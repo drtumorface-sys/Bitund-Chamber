@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#387870">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bitund">
+<title>BITUND — Acoustic Resonance Chamber · MIDAS Module</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Share+Tech+Mono&family=Cormorant+Garamond:ital,wght@0,300;1,300&display=swap">
+<style>
+/* ═══════════════════════════════════════════
+   MIDAS PALETTE SYSTEM (mirrored)
+═══════════════════════════════════════════ */
+:root {
+  --obsidian:  #09090c;
+  --basalt:    #111116;
+  --schist:    #1e1e26;
+  --granite:   #2e2e3a;
+  --ash:       #6a6878;
+  --chalk:     #ccc8c0;
+  --quartz:    #e4e0d8;
+  --copper:    #b07030;
+  --amber:     #c08010;
+  --verdigris: #387870;
+  --malachite: #285a50;
+  --font-d: 'Cinzel', serif;
+  --font-m: 'Share Tech Mono', monospace;
+  --font-b: 'Cormorant Garamond', serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--obsidian);
+  color: var(--chalk);
+  font-family: var(--font-m);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── BACKGROUND ORB ── */
+#glow-orb {
+  position: fixed; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70vmax; height: 70vmax; border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(56,120,112,0.12) 0%, rgba(56,120,112,0.04) 45%, transparent 72%);
+  filter: blur(48px); pointer-events: none; z-index: 0;
+  opacity: 0; transition: opacity 2s ease;
+}
+#glow-orb.active { opacity: 1; }
+
+/* ── LAYOUT ── */
+.page {
+  position: relative; z-index: 1;
+  max-width: 1100px; margin: 0 auto;
+  padding: 20px 16px 40px;
+}
+
+/* ── HEADER ── */
+.module-header {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  padding: 24px 0 20px;
+  border-bottom: 1px solid var(--granite);
+  margin-bottom: 20px;
+}
+.module-wordmark {
+  font-family: var(--font-d);
+  font-size: clamp(18px, 4vw, 28px);
+  letter-spacing: .45em; color: var(--quartz);
+  text-transform: uppercase;
+}
+.module-sub {
+  font-family: var(--font-b); font-style: italic;
+  font-size: 12px; color: var(--ash); letter-spacing: .08em;
+  margin-top: 4px;
+}
+.module-status {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--font-m); font-size: 9px; letter-spacing: .3em;
+  text-transform: uppercase; color: var(--ash);
+}
+.status-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--granite); transition: background .6s, box-shadow .6s;
+}
+.status-dot.active {
+  background: var(--verdigris);
+  box-shadow: 0 0 8px var(--verdigris);
+}
+#status-text { transition: color .6s; }
+#status-text.active { color: var(--verdigris); }
+
+/* ── MAIN GRID ── */
+.chamber-grid {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 14px;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .chamber-grid { grid-template-columns: 1fr; }
+}
+
+/* ── GLASS SECTION ── */
+section {
+  position: relative; border-radius: 14px;
+  border: 1px solid rgba(130,160,200,0.07);
+  box-shadow: inset 0 0 28px rgba(0,0,0,.75), 0 2px 16px rgba(0,0,0,.3);
+  padding: 20px 18px;
+  margin-bottom: 12px;
+  transform: translateZ(0); overflow: hidden;
+}
+section::before {
+  content: ''; position: absolute; inset: -10px; z-index: -1;
+  background: rgba(4,4,10,0.38);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+}
+
+/* ── SECTION LABELS ── */
+.sec-label {
+  font-size: 8px; letter-spacing: .4em; text-transform: uppercase;
+  color: var(--ash); margin-bottom: 14px;
+  border-bottom: 1px solid var(--schist); padding-bottom: 8px;
+}
+.sec-label em {
+  font-family: var(--font-b); font-style: italic;
+  font-size: 10px; letter-spacing: .03em; text-transform: none;
+  color: var(--ash); opacity: .7; display: block; margin-top: 2px;
+}
+
+/* ── GEOMETRY BUTTONS ── */
+.geo-grid { display: flex; flex-direction: column; gap: 5px; }
+.geo-btn {
+  background: var(--basalt); border: 1px solid var(--granite);
+  color: var(--ash); font-family: var(--font-m); font-size: 9px;
+  letter-spacing: .18em; text-transform: uppercase;
+  padding: 10px 12px; cursor: pointer; border-radius: 10px;
+  transition: all .3s; display: flex; justify-content: space-between; align-items: center;
+}
+.geo-btn:hover  { border-color: var(--copper); color: var(--chalk); }
+.geo-btn.active {
+  border-color: var(--verdigris); background: rgba(56,120,112,.1);
+  color: var(--quartz);
+  box-shadow: 0 0 14px rgba(56,120,112,.08);
+}
+.geo-faces {
+  font-size: 14px; color: var(--copper); font-family: var(--font-d);
+  min-width: 24px; text-align: right;
+}
+.geo-btn.active .geo-faces { color: var(--verdigris); }
+
+/* ── SLIDERS ── */
+.slider-group { margin-bottom: 16px; }
+.slider-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 6px;
+}
+.slider-label { font-size: 9px; letter-spacing: .28em; color: var(--ash); text-transform: uppercase; }
+.slider-val   { font-size: 11px; color: var(--copper); letter-spacing: .1em; }
+.slider-hint  { font-family: var(--font-b); font-style: italic; font-size: 9px;
+                color: var(--ash); opacity: .6; margin-top: 3px; }
+input[type=range] {
+  width: 100%; -webkit-appearance: none; appearance: none;
+  height: 3px; background: var(--granite); outline: none;
+  cursor: pointer; border-radius: 4px;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 14px; height: 14px;
+  background: var(--copper); border: 1px solid var(--amber);
+  cursor: pointer; border-radius: 50%;
+}
+input[type=range]::-moz-range-thumb {
+  width: 14px; height: 14px; background: var(--copper);
+  border: 1px solid var(--amber); cursor: pointer; border-radius: 50%;
+}
+
+/* ── SOURCE MODE ── */
+.source-row { display: flex; gap: 6px; margin-bottom: 16px; }
+.source-btn {
+  flex: 1; background: var(--basalt); border: 1px solid var(--granite);
+  color: var(--ash); font-family: var(--font-m); font-size: 8px;
+  letter-spacing: .22em; text-transform: uppercase; padding: 9px 6px;
+  cursor: pointer; text-align: center; transition: all .3s; border-radius: 10px;
+}
+.source-btn:hover { border-color: var(--copper); color: var(--chalk); }
+.source-btn.active { border-color: var(--amber); background: rgba(192,128,16,.08); color: var(--amber); }
+
+/* ── IGNITE BUTTON ── */
+.btn-ignite {
+  width: 100%; padding: 16px; background: transparent;
+  border: 1px solid var(--copper); color: var(--amber);
+  font-family: var(--font-d); font-size: 10px; letter-spacing: .45em;
+  text-transform: uppercase; cursor: pointer; border-radius: 12px;
+  transition: all .5s; position: relative; overflow: hidden;
+  margin-top: 4px;
+}
+.btn-ignite::after {
+  content: ''; position: absolute; inset: 0;
+  background: var(--copper); opacity: 0; transition: opacity .4s; border-radius: 12px;
+}
+.btn-ignite:hover::after { opacity: .07; }
+.btn-ignite.on {
+  border-color: var(--verdigris); color: var(--verdigris);
+  box-shadow: 0 0 20px rgba(56,120,112,.15);
+}
+.btn-ignite.on::after { background: var(--verdigris); }
+
+/* ── RECEIVER READOUT ── */
+.readout-grid {
+  display: grid; grid-template-columns: auto 1fr; gap: 5px 14px;
+  background: var(--obsidian); border: 1px solid var(--schist);
+  border-radius: 10px; padding: 12px 14px; margin-top: 12px;
+}
+.rk { font-size: 8px; letter-spacing: .28em; text-transform: uppercase; color: var(--ash); align-self: center; }
+.rv { font-size: 10px; color: var(--copper); letter-spacing: .1em; }
+#rv-state {
+  grid-column: span 2; text-align: center;
+  font-size: 8px; letter-spacing: .3em; text-transform: uppercase;
+  padding: 6px; border-radius: 6px; margin-top: 4px;
+  background: var(--schist); color: var(--ash);
+  transition: all .4s;
+}
+#rv-state.antinode { background: rgba(56,120,112,.15); color: var(--verdigris); border: 1px solid rgba(56,120,112,.3); }
+#rv-state.node     { background: rgba(80,20,10,.3);    color: #c06040;           border: 1px solid rgba(120,40,20,.3); }
+
+/* ── CANVAS SECTION ── */
+.canvas-wrap {
+  position: relative; background: var(--obsidian);
+  border-radius: 12px; border: 1px solid var(--schist);
+  overflow: hidden; aspect-ratio: 4/3;
+  cursor: crosshair;
+}
+.canvas-badge {
+  position: absolute; top: 10px; left: 12px; z-index: 10;
+  font-size: 8px; letter-spacing: .32em; text-transform: uppercase;
+  color: var(--ash); background: rgba(9,9,12,.8); padding: 4px 8px; border-radius: 6px;
+}
+.canvas-badges-right {
+  position: absolute; top: 10px; right: 10px; z-index: 10;
+  display: flex; gap: 6px;
+}
+.cbadge {
+  font-size: 8px; letter-spacing: .18em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 6px; border: 1px solid;
+}
+.cbadge-src { border-color: rgba(192,128,16,.4); color: var(--amber); background: rgba(192,128,16,.08); }
+.cbadge-rcv { border-color: rgba(56,120,112,.4); color: var(--verdigris); background: rgba(56,120,112,.08); }
+.canvas-hint {
+  position: absolute; bottom: 8px; left: 12px; z-index: 10;
+  font-family: var(--font-b); font-style: italic;
+  font-size: 10px; color: var(--ash); opacity: .5;
+}
+canvas#field {
+  display: block; width: 100%; height: 100%;
+  image-rendering: pixelated; /* preserve thermal heatmap sharpness */
+}
+
+/* ── MODE TABLE ── */
+.mode-table {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+  margin-top: 4px;
+}
+.mode-cell {
+  background: var(--obsidian); border: 1px solid var(--schist);
+  border-radius: 8px; padding: 9px 10px;
+}
+.mc-mode { font-size: 8px; letter-spacing: .2em; color: var(--ash); text-transform: uppercase; }
+.mc-amp  { font-size: 11px; color: var(--copper); margin-top: 3px; font-family: var(--font-m); }
+.mc-fib  { font-size: 8px; color: var(--ash); opacity: .6; margin-top: 1px; font-family: var(--font-b); font-style: italic; }
+
+/* ── FOOTER AXIOM ── */
+@keyframes tab-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+.axiom {
+  text-align: center; padding: 28px 0 10px;
+  font-family: var(--font-b); font-style: italic;
+  font-size: 13px; color: var(--ash); opacity: .5;
+  letter-spacing: .08em;
+}
+</style>
+</head>
+<body>
+
+<div id="glow-orb"></div>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <header class="module-header">
+    <div>
+      <div class="module-wordmark">Bitund <span style="color:var(--verdigris)">Chamber</span></div>
+      <div class="module-sub">Fibonacci Harmonic Resonance Engine — Acoustic Psycho-Spatial Simulator</div>
+    </div>
+    <div class="module-status">
+      <div class="status-dot" id="status-dot"></div>
+      <span id="status-text">DORMANT</span>
+    </div>
+  </header>
+
+  <!-- CHAMBER GRID -->
+  <div class="chamber-grid">
+
+    <!-- ── LEFT PANEL: CONTROLS ── -->
+    <div>
+
+      <!-- GEOMETRY -->
+      <section>
+        <div class="sec-label">Sacred Geometry
+          <em>Faces determine delay-line topology of the FDN</em>
+        </div>
+        <div class="geo-grid" id="geo-grid">
+          <button class="geo-btn" data-key="CAVE"         onclick="selectGeometry(this)"><span>Bilateral Cave</span><span class="geo-faces">2</span></button>
+          <button class="geo-btn" data-key="TRIGON"       onclick="selectGeometry(this)"><span>Trigon Chamber</span><span class="geo-faces">3</span></button>
+          <button class="geo-btn" data-key="CUBIC"        onclick="selectGeometry(this)"><span>Cubic Cell</span><span class="geo-faces">4</span></button>
+          <button class="geo-btn" data-key="HEXAGONAL"    onclick="selectGeometry(this)"><span>Hexagonal Hall</span><span class="geo-faces">6</span></button>
+          <button class="geo-btn active" data-key="DODEC" onclick="selectGeometry(this)"><span>Dodecahedral Cathedral</span><span class="geo-faces">12</span></button>
+        </div>
+      </section>
+
+      <!-- ACOUSTIC PARAMETERS -->
+      <section>
+        <div class="sec-label">Acoustic Parameters</div>
+
+        <div class="slider-group">
+          <div class="slider-row">
+            <span class="slider-label">Carrier f<sub>c</sub></span>
+            <span class="slider-val" id="val-carrier">142.0 Hz</span>
+          </div>
+          <input type="range" id="sl-carrier" min="20" max="432" step="0.5" value="142">
+          <div class="slider-hint">Primary ontogenic axis — Midas Tone default</div>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-row">
+            <span class="slider-label">Binaural f<sub>b</sub></span>
+            <span class="slider-val" id="val-binaural">7.83 Hz</span>
+          </div>
+          <input type="range" id="sl-binaural" min="0.1" max="40" step="0.01" value="7.83">
+          <div class="slider-hint">Schumann resonance default · Δ hemispheric phase</div>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-row">
+            <span class="slider-label">Reverb Depth ρ</span>
+            <span class="slider-val" id="val-rho">0.65</span>
+          </div>
+          <input type="range" id="sl-rho" min="0.1" max="0.92" step="0.01" value="0.65">
+          <div class="slider-hint">FDN feedback coefficient — sustain vs saturation</div>
+        </div>
+      </section>
+
+      <!-- INPUT SOURCE -->
+      <section>
+        <div class="sec-label">Input Channel</div>
+        <div class="source-row">
+          <button class="source-btn active" id="src-osc" onclick="setSource('osc')">
+            ∿ Oscillator
+          </button>
+          <button class="source-btn" id="src-device" onclick="setSource('device')">
+            ⊡ System Input
+          </button>
+          <button class="source-btn" id="src-file" onclick="setSource('file')">
+            ♫ Media File
+          </button>
+        </div>
+
+        <!-- DEVICE SELECTOR — shown when System Input active -->
+        <div id="device-panel" style="display:none; margin-bottom:14px;">
+          <div style="display:flex; gap:6px; align-items:center; margin-bottom:8px;">
+            <select id="device-select"
+              style="flex:1; background:var(--schist); border:1px solid var(--granite);
+                     color:var(--chalk); font-family:var(--font-m); font-size:9px;
+                     letter-spacing:.15em; padding:9px 10px; border-radius:9px;
+                     cursor:pointer; outline:none; appearance:none;">
+              <option value="">— click Scan to list devices —</option>
+            </select>
+            <button onclick="scanDevices()"
+              style="background:var(--basalt); border:1px solid var(--granite);
+                     color:var(--ash); font-family:var(--font-m); font-size:8px;
+                     letter-spacing:.2em; text-transform:uppercase; padding:9px 10px;
+                     cursor:pointer; border-radius:9px; white-space:nowrap;
+                     transition:all .3s;"
+              onmouseover="this.style.borderColor='var(--copper)'"
+              onmouseout="this.style.borderColor='var(--granite)'">
+              ↺ Scan
+            </button>
+          </div>
+          <div style="font-family:var(--font-b);font-style:italic;font-size:10px;
+               color:var(--ash);opacity:.7;line-height:1.55;">
+            Select any audio input — including loopback/virtual devices.<br>
+            <span style="color:var(--copper);opacity:1;">Windows:</span> enable <em>Stereo Mix</em> in Sound settings, or install
+            <em>VB-Cable</em> (free) and set it as your system output.<br>
+            <span style="color:var(--copper);opacity:1;">Mac:</span> install <em>BlackHole</em> and route output to it.
+          </div>
+        </div>
+
+        <!-- MEDIA FILE PLAYER — shown when Media File active -->
+        <div id="file-panel" style="display:none; margin-bottom:14px;">
+          <!-- Drop zone -->
+          <div id="drop-zone"
+            style="border:1px dashed var(--granite); border-radius:10px;
+                   padding:16px; text-align:center; cursor:pointer;
+                   transition:all .3s; margin-bottom:8px; position:relative;"
+            onclick="document.getElementById('file-picker').click()"
+            ondragover="dzOver(event)" ondragleave="dzLeave(event)" ondrop="dzDrop(event)">
+            <div style="font-size:9px;letter-spacing:.3em;text-transform:uppercase;
+                 color:var(--ash);" id="dz-label">Drop audio / video file here<br>or click to browse</div>
+            <input type="file" id="file-picker" accept="audio/*,video/*"
+              style="display:none;" onchange="fileChosen(this.files[0])">
+          </div>
+          <!-- Playback transport -->
+          <div id="transport" style="display:none;">
+            <div style="font-size:9px;letter-spacing:.15em;color:var(--copper);
+                 margin-bottom:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+                 id="file-name"></div>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <button id="btn-playpause" onclick="togglePlayback()"
+                style="background:var(--basalt);border:1px solid var(--verdigris);
+                       color:var(--verdigris);font-family:var(--font-m);font-size:10px;
+                       letter-spacing:.2em;text-transform:uppercase;padding:8px 14px;
+                       cursor:pointer;border-radius:9px;transition:all .3s;min-width:72px;">
+                ▶ Play
+              </button>
+              <input type="range" id="seek-bar" min="0" max="100" step="0.1" value="0"
+                style="flex:1;" oninput="seekMedia(this.value)">
+              <span style="font-size:9px;color:var(--ash);min-width:36px;text-align:right;"
+                    id="time-display">0:00</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live signal indicator -->
+        <div id="live-indicator" style="display:none; align-items:center; gap:7px; margin-bottom:10px;">
+          <div style="width:6px;height:6px;border-radius:50%;background:var(--verdigris);
+               box-shadow:0 0 6px var(--verdigris);animation:tab-pulse 1.4s infinite;"></div>
+          <span style="font-size:8px;letter-spacing:.28em;text-transform:uppercase;
+                color:var(--verdigris);" id="live-indicator-text">Signal active</span>
+        </div>
+
+        <button class="btn-ignite" id="btn-ignite" onclick="toggleChamber()">
+          Ignite Chamber
+        </button>
+      </section>
+
+      <!-- RECEIVER READOUT -->
+      <section>
+        <div class="sec-label">Receiver State
+          <em>Drag the cyan node on the field to reposition</em>
+        </div>
+        <div class="readout-grid">
+          <span class="rk">X</span><span class="rv" id="rv-x">0.500</span>
+          <span class="rk">Y</span><span class="rv" id="rv-y">0.500</span>
+          <span class="rk">Pressure</span><span class="rv" id="rv-p">0.000</span>
+          <span class="rk">Stereo Pan</span><span class="rv" id="rv-pan">Centre</span>
+          <div id="rv-state">Transitional Field</div>
+        </div>
+      </section>
+
+    </div><!-- end left panel -->
+
+    <!-- ── RIGHT PANEL: FIELD + MODES ── -->
+    <div>
+
+      <!-- PRESSURE FIELD CANVAS -->
+      <section style="padding:0; overflow:hidden; border-radius:14px;">
+        <div class="canvas-wrap" id="canvas-wrap">
+          <div class="canvas-badge" id="canvas-geo-label">DODECAHEDRAL — 12 FACES</div>
+          <div class="canvas-badges-right">
+            <span class="cbadge cbadge-src">SRC ◉</span>
+            <span class="cbadge cbadge-rcv">RCV ◎</span>
+          </div>
+          <span class="canvas-hint">Pressure field · drag receiver node to explore antinodes</span>
+          <canvas id="field" width="600" height="450"></canvas>
+        </div>
+      </section>
+
+      <!-- MODAL HARMONIC ANALYSIS -->
+      <section>
+        <div class="sec-label">Active Fibonacci Modal Harmonics
+          <em>Amplitude decays by Fibonacci weighting — A<sub>n</sub> = 1 / F<sub>p+q</sub></em>
+        </div>
+        <div class="mode-table" id="mode-table"></div>
+      </section>
+
+    </div><!-- end right panel -->
+
+  </div><!-- end chamber-grid -->
+
+  <div class="axiom">The room does not sing on its own. It waits for the human axis to supply the fundamental frequency.</div>
+
+</div><!-- end page -->
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   BITUND CHAMBER — Acoustic Resonance Chamber Module
+   Fibonacci Harmonic FDN Reverb · Pressure Field Visualiser
+   MIDAS Module — Standalone
+══════════════════════════════════════════════════════════ */
+
+const PHI = (1 + Math.sqrt(5)) / 2;
+const FIB = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233];
+
+const GEOMETRIES = {
+  CAVE:      { name: 'Bilateral Cave',          faces: 2,  scale: 1.0   },
+  TRIGON:    { name: 'Trigon Chamber',           faces: 3,  scale: 1.33  },
+  CUBIC:     { name: 'Cubic Cell',               faces: 4,  scale: 1.5   },
+  HEXAGONAL: { name: 'Hexagonal Hall',           faces: 6,  scale: 1.618 },
+  DODEC:     { name: 'Dodecahedral Cathedral',   faces: 12, scale: 2.618 },
+};
+
+// ── STATE ──────────────────────────────────────────────────
+let state = {
+  isIgnited:   false,
+  geoKey:      'DODEC',
+  carrierHz:   142.0,
+  binauralHz:  7.83,
+  rho:         0.65,
+  sourceMode:  'osc',   // 'osc' | 'device' | 'file'
+  receiver:    { x: 0.5, y: 0.5 },
+  dragging:    false,
+};
+
+// ── AUDIO REFS ─────────────────────────────────────────────
+let audioCtx      = null;
+let oscL          = null;   // main binaural carrier L
+let oscR          = null;   // main binaural carrier R
+let masterGain    = null;
+let pannerNode    = null;
+let delayNodes    = [];
+let fbGains       = [];
+let deviceStream  = null;   // getUserMedia stream from system input device
+let mediaEl       = null;   // HTMLAudioElement for file playback
+let mediaElSource = null;   // MediaElementSourceNode (single-use per ctx)
+// MIDAS oscillator engine extras (osc mode only)
+let oscLattice    = [];     // harmonic resonance lattice oscillators
+let walhuuOsc     = null;   // 0.137 Hz Walhuu envelope LFO
+let tremoloOscs   = [];     // polyrhythm tremolo LFOs (1.5 Hz L, 1.2 Hz R)
+
+// ── MODAL HARMONICS ────────────────────────────────────────
+function generateModes(faces) {
+  const modes = [];
+  const maxIdx = Math.min(faces, 7);
+  for (let p = 0; p <= maxIdx; p++) {
+    for (let q = 0; q <= maxIdx; q++) {
+      if (p === 0 && q === 0) continue;
+      const fibIdx = Math.min(p + q, FIB.length - 1);
+      modes.push({ p, q, amp: 1.0 / FIB[fibIdx], fibN: FIB[fibIdx] });
+    }
+  }
+  modes.sort((a, b) => b.amp - a.amp);
+  // Return only as many modes as the geometry has faces (Miller's Law — 7±2 cap)
+  return modes.slice(0, Math.min(faces * 2, 12));
+}
+
+function pressureAt(x, y, modes, t) {
+  let p = 0;
+  for (const m of modes) {
+    const spatial  = Math.cos(m.p * Math.PI * x) * Math.cos(m.q * Math.PI * y);
+    const temporal = Math.sin(2 * Math.PI * (m.p + m.q + 1) * 0.04 * t);
+    p += m.amp * spatial * temporal;
+  }
+  return p;
+}
+
+// ── CANVAS ─────────────────────────────────────────────────
+const canvas  = document.getElementById('field');
+const ctx2d   = canvas.getContext('2d');
+
+// Off-screen low-res buffer for the thermal heatmap (performance)
+const HMAP_W  = 100;
+const HMAP_H  = 75;
+const offscreenCanvas = document.createElement('canvas');
+offscreenCanvas.width  = HMAP_W;
+offscreenCanvas.height = HMAP_H;
+const octx = offscreenCanvas.getContext('2d');
+const imgData = octx.createImageData(HMAP_W, HMAP_H);
+
+let animFrame = null;
+let fieldModes = generateModes(GEOMETRIES[state.geoKey].faces);
+
+function thermalColor(v) {
+  // v in [-1, 1]
+  // negative → deep void / blue-teal (destructive interference)
+  // zero     → basalt
+  // positive → copper → amber (constructive interference)
+  const n = (v + 1) * 0.5; // [0, 1]
+  let r, g, b;
+  if (n < 0.2) {
+    // void to deep teal
+    const t = n / 0.2;
+    r = Math.round(9  + t * 10);
+    g = Math.round(9  + t * 30);
+    b = Math.round(12 + t * 50);
+  } else if (n < 0.5) {
+    // teal to basalt
+    const t = (n - 0.2) / 0.3;
+    r = Math.round(19 + t * (17 - 19));
+    g = Math.round(39 + t * (17 - 39));
+    b = Math.round(62 + t * (22 - 62));
+  } else if (n < 0.75) {
+    // basalt to copper
+    const t = (n - 0.5) / 0.25;
+    r = Math.round(17 + t * (176 - 17));
+    g = Math.round(17 + t * (112 - 17));
+    b = Math.round(22 + t * (48  - 22));
+  } else {
+    // copper to bright amber
+    const t = (n - 0.75) / 0.25;
+    r = Math.round(176 + t * (232 - 176));
+    g = Math.round(112 + t * (200 - 112));
+    b = Math.round(48  + t * (64  - 48));
+  }
+  return [r, g, b];
+}
+
+function renderFrame() {
+  const now  = performance.now() / 1000;
+  const W    = canvas.width;
+  const H    = canvas.height;
+  const geo  = GEOMETRIES[state.geoKey];
+  const rx   = state.receiver.x;
+  const ry   = state.receiver.y;
+
+  ctx2d.clearRect(0, 0, W, H);
+
+  // ── 1. Thermal pressure heatmap (rendered at low res, scaled up) ──
+  for (let px = 0; px < HMAP_W; px++) {
+    for (let py = 0; py < HMAP_H; py++) {
+      const nx = px / HMAP_W;
+      const ny = py / HMAP_H;
+      const p  = pressureAt(nx, ny, fieldModes, now);
+      const [r, g, b] = thermalColor(Math.max(-1, Math.min(1, p)));
+      const idx = (py * HMAP_W + px) * 4;
+      imgData.data[idx]     = r;
+      imgData.data[idx + 1] = g;
+      imgData.data[idx + 2] = b;
+      imgData.data[idx + 3] = 255;
+    }
+  }
+  octx.putImageData(imgData, 0, 0);
+  ctx2d.imageSmoothingEnabled = true;
+  ctx2d.imageSmoothingQuality = 'high';
+  ctx2d.drawImage(offscreenCanvas, 0, 0, W, H);
+
+  // ── 2. Geometry boundary polygon ──
+  const cx = W / 2, cy = H / 2;
+  const rad = Math.min(W, H) * 0.45;
+  const faces = geo.faces;
+
+  ctx2d.save();
+  ctx2d.strokeStyle = state.isIgnited
+    ? 'rgba(56,120,112,0.55)'
+    : 'rgba(176,112,48,0.35)';
+  ctx2d.lineWidth = 1.5;
+  ctx2d.shadowColor = state.isIgnited ? 'rgba(56,120,112,0.5)' : 'rgba(176,112,48,0.3)';
+  ctx2d.shadowBlur  = state.isIgnited ? 10 : 4;
+  ctx2d.beginPath();
+  for (let i = 0; i < faces; i++) {
+    const a  = (i / faces) * Math.PI * 2 - Math.PI / 2;
+    const vx = cx + rad * Math.cos(a);
+    const vy = cy + rad * Math.sin(a);
+    i === 0 ? ctx2d.moveTo(vx, vy) : ctx2d.lineTo(vx, vy);
+  }
+  ctx2d.closePath();
+  ctx2d.stroke();
+  ctx2d.restore();
+
+  // Internal diagonals (for geometries ≤ 6 for clarity)
+  if (faces <= 6) {
+    ctx2d.save();
+    ctx2d.strokeStyle = state.isIgnited
+      ? 'rgba(56,120,112,0.12)'
+      : 'rgba(176,112,48,0.08)';
+    ctx2d.lineWidth = 0.75;
+    ctx2d.setLineDash([3, 6]);
+    for (let i = 0; i < faces; i++) {
+      const ai = (i / faces) * Math.PI * 2 - Math.PI / 2;
+      for (let j = i + 2; j < faces - (i === 0 ? 1 : 0); j++) {
+        const aj = (j / faces) * Math.PI * 2 - Math.PI / 2;
+        ctx2d.beginPath();
+        ctx2d.moveTo(cx + rad * Math.cos(ai), cy + rad * Math.sin(ai));
+        ctx2d.lineTo(cx + rad * Math.cos(aj), cy + rad * Math.sin(aj));
+        ctx2d.stroke();
+      }
+    }
+    ctx2d.setLineDash([]);
+    ctx2d.restore();
+  }
+
+  // ── 3. Source node (fixed centre) ──
+  ctx2d.save();
+  ctx2d.shadowColor = 'rgba(192,128,16,0.9)';
+  ctx2d.shadowBlur  = state.isIgnited ? 18 : 8;
+  ctx2d.beginPath();
+  ctx2d.arc(cx, cy, 7, 0, Math.PI * 2);
+  ctx2d.fillStyle = state.isIgnited ? '#d4a020' : '#806020';
+  ctx2d.fill();
+  // Inner cross
+  ctx2d.strokeStyle = '#fff8';
+  ctx2d.lineWidth = 1;
+  ctx2d.shadowBlur = 0;
+  ctx2d.beginPath();
+  ctx2d.moveTo(cx - 4, cy); ctx2d.lineTo(cx + 4, cy);
+  ctx2d.moveTo(cx, cy - 4); ctx2d.lineTo(cx, cy + 4);
+  ctx2d.stroke();
+  ctx2d.restore();
+
+  // ── 4. Dashed line source → receiver ──
+  const recX = rx * W;
+  const recY = ry * H;
+  ctx2d.save();
+  ctx2d.strokeStyle = 'rgba(255,255,255,0.07)';
+  ctx2d.lineWidth = 1;
+  ctx2d.setLineDash([4, 8]);
+  ctx2d.beginPath();
+  ctx2d.moveTo(cx, cy);
+  ctx2d.lineTo(recX, recY);
+  ctx2d.stroke();
+  ctx2d.setLineDash([]);
+  ctx2d.restore();
+
+  // ── 5. Receiver node ──
+  const pressure = pressureAt(rx, ry, fieldModes, now);
+  const isAnti   = pressure >  0.25;
+  const isNode   = pressure < -0.25;
+  const recCol   = isAnti ? 'rgba(56,200,160,0.9)' : isNode ? 'rgba(180,70,40,0.9)' : 'rgba(180,160,120,0.7)';
+
+  ctx2d.save();
+  ctx2d.shadowColor = recCol;
+  ctx2d.shadowBlur  = state.isIgnited ? 16 : 6;
+  ctx2d.beginPath();
+  ctx2d.arc(recX, recY, 9, 0, Math.PI * 2);
+  ctx2d.strokeStyle = recCol;
+  ctx2d.lineWidth = 2;
+  ctx2d.stroke();
+  ctx2d.beginPath();
+  ctx2d.arc(recX, recY, 3, 0, Math.PI * 2);
+  ctx2d.fillStyle = recCol;
+  ctx2d.fill();
+  ctx2d.restore();
+
+  // ── 6. Update UI readouts ──
+  document.getElementById('rv-x').textContent   = rx.toFixed(3);
+  document.getElementById('rv-y').textContent   = ry.toFixed(3);
+  document.getElementById('rv-p').textContent   = pressure.toFixed(3);
+  const panStr = rx < 0.42 ? `← ${Math.round((0.5-rx)*200)}% L` :
+                 rx > 0.58 ? `→ ${Math.round((rx-0.5)*200)}% R` : 'Centre';
+  document.getElementById('rv-pan').textContent = panStr;
+
+  const stateEl = document.getElementById('rv-state');
+  if (isAnti) {
+    stateEl.textContent = 'Antinode · Constructive Interference';
+    stateEl.className = 'antinode';
+  } else if (isNode) {
+    stateEl.textContent = 'Node · Destructive Interference';
+    stateEl.className = 'node';
+  } else {
+    stateEl.textContent = 'Transitional Field';
+    stateEl.className = '';
+  }
+
+  // ── 7. Update stereo panner if active ──
+  if (pannerNode && audioCtx) {
+    const panVal = (rx - 0.5) * 1.8; // -0.9 to +0.9
+    pannerNode.pan.setTargetAtTime(panVal, audioCtx.currentTime, 0.05);
+  }
+
+  animFrame = requestAnimationFrame(renderFrame);
+}
+
+// ── AUDIO ENGINE ───────────────────────────────────────────
+
+function buildFDN(ctx, sourceNode, geo, rho) {
+  const faces      = geo.faces;
+  const sf         = geo.scale;
+  const destMerger = ctx.createChannelMerger(2);
+  const panner     = ctx.createStereoPanner();
+  const master     = ctx.createGain();
+  master.gain.setValueAtTime(0, ctx.currentTime);
+  master.gain.linearRampToValueAtTime(0.42, ctx.currentTime + 2.5);
+
+  // Master compressor — mirrors MIDAS limiter settings
+  const limiter = ctx.createDynamicsCompressor();
+  limiter.threshold.value = -3;
+  limiter.knee.value      =  6;
+  limiter.ratio.value     =  4;
+  limiter.attack.value    =  0.010;
+  limiter.release.value   =  0.200;
+
+  destMerger.connect(panner);
+  panner.connect(master);
+  master.connect(limiter);
+  limiter.connect(ctx.destination);
+
+  const delays = [];
+  const fbs    = [];
+
+  for (let i = 0; i < faces; i++) {
+    // Fibonacci-scaled delay times: τ_i = 0.012 * scale * PHI^(i%4)
+    const rawDelay = 0.012 * sf * Math.pow(PHI, i % 4);
+    const delayT   = Math.min(rawDelay, 0.48); // cap at 480ms
+
+    const dly = ctx.createDelay(1.0);
+    dly.delayTime.value = delayT;
+
+    const fb  = ctx.createGain();
+    fb.gain.value = rho;
+
+    const out = ctx.createGain();
+    out.gain.value = 0.8 / Math.sqrt(faces);
+
+    // Signal path: source → delay → feedback → delay (loop) + output
+    sourceNode.connect(dly);
+    dly.connect(fb);
+    fb.connect(dly);        // FDN recursive loop
+    dly.connect(out);
+    out.connect(destMerger, 0, i % 2); // alternate L/R
+
+    delays.push(dly);
+    fbs.push(fb);
+  }
+
+  return { master, panner, delays, fbs };
+}
+
+async function ignite() {
+  const ACtx = window.AudioContext || window.webkitAudioContext;
+  if (!ACtx) { alert('Web Audio API not supported in this browser.'); return; }
+
+  audioCtx = new ACtx({ latencyHint: 'playback' });
+
+  const geo = GEOMETRIES[state.geoKey];
+  let sourceNode;
+
+  if (state.sourceMode === 'device') {
+    const deviceId = document.getElementById('device-select').value;
+    if (!deviceId) {
+      audioCtx.close(); audioCtx = null;
+      setSourceFallback('No device selected. Click Scan, choose an input, then ignite.');
+      return;
+    }
+    try {
+      deviceStream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          deviceId:           { exact: deviceId },
+          echoCancellation:   false,  // preserve raw signal — no processing artifacts
+          noiseSuppression:   false,
+          autoGainControl:    false,
+          latency:            0,
+        },
+        video: false,
+      });
+      const track = deviceStream.getAudioTracks()[0];
+      sourceNode = audioCtx.createMediaStreamSource(deviceStream);
+      showLiveIndicator(track.label || 'Device signal active');
+      track.addEventListener('ended', () => { if (state.isIgnited) toggleChamber(); });
+    } catch (e) {
+      audioCtx.close(); audioCtx = null;
+      setSourceFallback('Could not open device: ' + e.message);
+      return;
+    }
+  }
+
+  if (state.sourceMode === 'file') {
+    if (!mediaEl || !mediaEl.src) {
+      audioCtx.close(); audioCtx = null;
+      setSourceFallback('No file loaded. Drop an audio or video file onto the panel first.');
+      return;
+    }
+    // MediaElementSource can only be created once per element per AudioContext
+    mediaElSource = audioCtx.createMediaElementSource(mediaEl);
+    sourceNode = mediaElSource;
+    mediaEl.play();
+    document.getElementById('btn-playpause').textContent = '⏸ Pause';
+    showLiveIndicator('Media file active');
+  }
+
+  if (state.sourceMode === 'osc') {
+    const ac  = audioCtx;
+    const fL  = state.carrierHz - state.binauralHz / 2;
+    const fR  = state.carrierHz + state.binauralHz / 2;
+
+    // ── Per-channel gain buses ──
+    const gainL = ac.createGain();
+    const gainR = ac.createGain();
+    gainL.gain.value = gainR.gain.value = 0.38;
+
+    // ── Binaural carrier pair (MIDAS fL/fR split) ──
+    oscL = ac.createOscillator(); oscR = ac.createOscillator();
+    oscL.type = oscR.type = 'sine';
+    oscL.frequency.value = fL; oscR.frequency.value = fR;
+    oscL.connect(gainL);       oscR.connect(gainR);
+    oscL.start();              oscR.start();
+
+    // ── Resonance lattice: unity · fifth · octave (MIDAS buildResonanceLattice) ──
+    oscLattice = [];
+    [[1, 0.055], [1.5, 0.038], [2, 0.028]].forEach(([mult, amp]) => {
+      const fBase = state.carrierHz * mult;
+      if (fBase < 20 || fBase > 290) return;
+      const oL = ac.createOscillator(), gL = ac.createGain();
+      const oR = ac.createOscillator(), gR = ac.createGain();
+      oL.type = oR.type = 'sine';
+      oL.frequency.value = fBase - (state.binauralHz * mult) / 2;
+      oR.frequency.value = fBase + (state.binauralHz * mult) / 2;
+      gL.gain.value = gR.gain.value = amp;
+      oL.connect(gL); gL.connect(gainL);
+      oR.connect(gR); gR.connect(gainR);
+      oL.start(); oR.start();
+      oscLattice.push(oL, oR);
+    });
+
+    // ── WaveShaper thermal saturation k=25 (MIDAS shaper formula) ──
+    const shaper = ac.createWaveShaper();
+    shaper.oversample = '4x';
+    const k = 25, SZ = 4096;
+    const curve = new Float32Array(SZ);
+    for (let i = 0; i < SZ; i++) {
+      const x = (i * 2) / (SZ - 1) - 1;
+      curve[i] = ((1 + k) * x) / (1 + k * Math.abs(x));
+    }
+    shaper.curve = curve;
+
+    // ── Walhuu envelope LFO — 0.137 Hz, ±10% depth (MIDAS walhuuOsc) ──
+    walhuuOsc = ac.createOscillator();
+    const wScaleL = ac.createGain(), wScaleR = ac.createGain();
+    walhuuOsc.frequency.value = 0.137;
+    wScaleL.gain.value = wScaleR.gain.value = 0.10;
+    walhuuOsc.connect(wScaleL); wScaleL.connect(gainL.gain);
+    walhuuOsc.connect(wScaleR); wScaleR.connect(gainR.gain);
+    walhuuOsc.start();
+
+    // ── Polyrhythm tremolo — 13:8 ratio, 1.5 Hz L / 1.2 Hz R (MIDAS tremoloL/R) ──
+    tremoloOscs = [];
+    const trL = ac.createOscillator(), trDepthL = ac.createGain();
+    const trR = ac.createOscillator(), trDepthR = ac.createGain();
+    trL.frequency.value = 1.5; trR.frequency.value = 1.2;
+    trDepthL.gain.value = 0.04; trDepthR.gain.value = 0.04;
+    trL.connect(trDepthL); trDepthL.connect(gainL.gain);
+    trR.connect(trDepthR); trDepthR.connect(gainR.gain);
+    trL.start(); trR.start();
+    tremoloOscs.push(trL, trR);
+
+    // ── Mix L+R through shaper → mono FDN input ──
+    const preFDN = ac.createChannelMerger(2);
+    gainL.connect(preFDN, 0, 0);
+    gainR.connect(preFDN, 0, 1);
+    const mixDown = ac.createGain(); mixDown.gain.value = 0.5;
+    preFDN.connect(shaper); shaper.connect(mixDown);
+    sourceNode = mixDown;
+  }
+
+  const { master, panner, delays, fbs } = buildFDN(audioCtx, sourceNode, geo, state.rho);
+
+  masterGain = master;
+  pannerNode = panner;
+  delayNodes = delays;
+  fbGains    = fbs;
+}
+
+function dissolve() {
+  if (!audioCtx) return;
+  masterGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 2);
+  setTimeout(() => {
+    if (oscL)       { oscL.stop(); oscL = null; }
+    if (oscR)       { oscR.stop(); oscR = null; }
+    oscLattice.forEach(o => { try { o.stop(); } catch(_){} });
+    oscLattice = [];
+    tremoloOscs.forEach(o => { try { o.stop(); } catch(_){} });
+    tremoloOscs = [];
+    if (walhuuOsc)    { try { walhuuOsc.stop(); } catch(_){} walhuuOsc = null; }
+    if (deviceStream) { deviceStream.getTracks().forEach(t => t.stop()); deviceStream = null; }
+    if (mediaEl)      { mediaEl.pause(); }
+    mediaElSource = null;
+    audioCtx.close();
+    audioCtx   = null;
+    masterGain = null;
+    pannerNode = null;
+    delayNodes = [];
+    fbGains    = [];
+  }, 2100);
+  hideLiveIndicator();
+  if (mediaEl) document.getElementById('btn-playpause').textContent = '▶ Play';
+}
+
+function showLiveIndicator(label) {
+  const el = document.getElementById('live-indicator');
+  el.style.display = 'flex';
+  document.getElementById('live-indicator-text').textContent = label;
+}
+function hideLiveIndicator() {
+  document.getElementById('live-indicator').style.display = 'none';
+}
+
+// Called when ignition fails — revert to oscillator cleanly
+function setSourceFallback(msg) {
+  alert(msg);
+  setSource('osc');
+  const btn = document.getElementById('btn-ignite');
+  btn.textContent = 'Ignite Chamber';
+  btn.classList.remove('on');
+  btn.disabled = false;
+  state.isIgnited = false;
+  document.getElementById('status-dot').classList.remove('active');
+  document.getElementById('status-text').classList.remove('active');
+  document.getElementById('status-text').textContent = 'DORMANT';
+  document.getElementById('glow-orb').classList.remove('active');
+}
+
+function updateOscillators() {
+  if (!oscL || !oscR || !audioCtx) return;
+  const t  = audioCtx.currentTime;
+  const fL = state.carrierHz - state.binauralHz / 2;
+  const fR = state.carrierHz + state.binauralHz / 2;
+  oscL.frequency.setTargetAtTime(fL, t, 0.1);
+  oscR.frequency.setTargetAtTime(fR, t, 0.1);
+  // Retune lattice pairs: indices 0,1 = fifth pair, 2,3 = octave pair, etc.
+  const mults = [1.5, 2];
+  oscLattice.forEach((o, i) => {
+    const mult   = mults[Math.floor(i / 2)];
+    if (!mult) return;
+    const isLeft = i % 2 === 0;
+    const fBase  = state.carrierHz * mult;
+    const target = isLeft
+      ? fBase - (state.binauralHz * mult) / 2
+      : fBase + (state.binauralHz * mult) / 2;
+    o.frequency.setTargetAtTime(target, t, 0.1);
+  });
+}
+
+function updateFeedback() {
+  fbGains.forEach(g => {
+    if (audioCtx) g.gain.setTargetAtTime(state.rho, audioCtx.currentTime, 0.05);
+  });
+}
+
+// ── UI ACTIONS ─────────────────────────────────────────────
+
+async function toggleChamber() {
+  if (!state.isIgnited) {
+    const btn = document.getElementById('btn-ignite');
+    btn.textContent = 'Igniting…';
+    btn.disabled = true;
+    await ignite();
+    // ignite() calls setSourceFallback() on failure which resets state itself —
+    // only proceed if audioCtx was successfully created
+    if (!audioCtx) return;
+    state.isIgnited = true;
+    btn.textContent = 'Dissolve Chamber';
+    btn.classList.add('on');
+    btn.disabled = false;
+    document.getElementById('status-dot').classList.add('active');
+    document.getElementById('status-text').classList.add('active');
+    document.getElementById('status-text').textContent = 'OPERATIVE';
+    document.getElementById('glow-orb').classList.add('active');
+  } else {
+    dissolve();
+    state.isIgnited = false;
+    const btn = document.getElementById('btn-ignite');
+    btn.textContent = 'Ignite Chamber';
+    btn.classList.remove('on');
+    document.getElementById('status-dot').classList.remove('active');
+    document.getElementById('status-text').classList.remove('active');
+    document.getElementById('status-text').textContent = 'DORMANT';
+    document.getElementById('glow-orb').classList.remove('active');
+  }
+}
+
+function selectGeometry(btn) {
+  if (state.isIgnited) return; // lock geometry while active
+  document.querySelectorAll('.geo-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  state.geoKey = btn.dataset.key;
+
+  const geo = GEOMETRIES[state.geoKey];
+  document.getElementById('canvas-geo-label').textContent =
+    geo.name.toUpperCase() + ' — ' + geo.faces + ' FACES';
+
+  fieldModes = generateModes(geo.faces);
+  renderModeTable(fieldModes);
+}
+
+function setSource(mode) {
+  if (state.isIgnited) return;
+  state.sourceMode = mode;
+  document.getElementById('src-osc').classList.toggle('active',    mode === 'osc');
+  document.getElementById('src-device').classList.toggle('active', mode === 'device');
+  document.getElementById('src-file').classList.toggle('active',   mode === 'file');
+  document.getElementById('device-panel').style.display = mode === 'device' ? 'block' : 'none';
+  document.getElementById('file-panel').style.display   = mode === 'file'   ? 'block' : 'none';
+}
+
+// ── DEVICE SCANNER ─────────────────────────────────────────
+async function scanDevices() {
+  const sel = document.getElementById('device-select');
+  sel.innerHTML = '<option value="">Scanning…</option>';
+  try {
+    // Brief permission request so browser returns labelled device names
+    const tmp = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    tmp.getTracks().forEach(t => t.stop());
+  } catch (_) { /* permission denied — labels will be generic */ }
+
+  const all    = await navigator.mediaDevices.enumerateDevices();
+  const inputs = all.filter(d => d.kind === 'audioinput');
+
+  if (inputs.length === 0) {
+    sel.innerHTML = '<option value="">No audio inputs found</option>';
+    return;
+  }
+  sel.innerHTML = inputs.map((d, i) =>
+    `<option value="${d.deviceId}">${d.label || 'Input ' + (i + 1)}</option>`
+  ).join('');
+}
+
+// ── FILE DROP ZONE ─────────────────────────────────────────
+function dzOver(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').style.borderColor = 'var(--verdigris)';
+  document.getElementById('drop-zone').style.background  = 'rgba(56,120,112,0.06)';
+}
+function dzLeave(e) {
+  document.getElementById('drop-zone').style.borderColor = 'var(--granite)';
+  document.getElementById('drop-zone').style.background  = '';
+}
+function dzDrop(e) {
+  e.preventDefault();
+  dzLeave(e);
+  const file = e.dataTransfer.files[0];
+  if (file) fileChosen(file);
+}
+
+function fileChosen(file) {
+  if (!file) return;
+  // If already ignited with this element as source, dissolve first
+  if (state.isIgnited && mediaElSource) toggleChamber();
+
+  if (mediaEl) {
+    mediaEl.pause();
+    URL.revokeObjectURL(mediaEl.src);
+    mediaEl.removeEventListener('timeupdate', updateTimeDisplay);
+  }
+
+  mediaEl      = new Audio();
+  mediaEl.src  = URL.createObjectURL(file);
+  mediaEl.loop = true;
+  mediaEl.addEventListener('timeupdate', updateTimeDisplay);
+  mediaEl.addEventListener('loadedmetadata', () => {
+    document.getElementById('seek-bar').max = mediaEl.duration || 100;
+  });
+
+  document.getElementById('file-name').textContent      = file.name;
+  document.getElementById('transport').style.display    = 'block';
+  document.getElementById('btn-playpause').textContent  = '▶ Play';
+  document.getElementById('dz-label').textContent       = '✓ ' + file.name + ' — click to replace';
+  document.getElementById('seek-bar').value             = 0;
+  document.getElementById('time-display').textContent   = '0:00';
+}
+
+// ── MEDIA TRANSPORT ────────────────────────────────────────
+function togglePlayback() {
+  if (!mediaEl) return;
+  if (mediaEl.paused) {
+    mediaEl.play();
+    document.getElementById('btn-playpause').textContent = '⏸ Pause';
+  } else {
+    mediaEl.pause();
+    document.getElementById('btn-playpause').textContent = '▶ Play';
+  }
+}
+
+function seekMedia(val) {
+  if (mediaEl) mediaEl.currentTime = parseFloat(val);
+}
+
+function updateTimeDisplay() {
+  if (!mediaEl) return;
+  const t  = mediaEl.currentTime;
+  const m  = Math.floor(t / 60);
+  const s  = Math.floor(t % 60).toString().padStart(2, '0');
+  document.getElementById('time-display').textContent = `${m}:${s}`;
+  if (!state.dragging) document.getElementById('seek-bar').value = t;
+}
+
+function renderModeTable(modes) {
+  const tbl = document.getElementById('mode-table');
+  tbl.innerHTML = modes.slice(0, 6).map(m => `
+    <div class="mode-cell">
+      <div class="mc-mode">Mode (${m.p},${m.q})</div>
+      <div class="mc-amp">${m.amp.toFixed(4)}</div>
+      <div class="mc-fib">F<sub>${m.p+m.q}</sub> = ${m.fibN}</div>
+    </div>`).join('');
+}
+
+// ── SLIDER HANDLERS ───────────────────────────────────────
+
+document.getElementById('sl-carrier').addEventListener('input', function() {
+  state.carrierHz = parseFloat(this.value);
+  document.getElementById('val-carrier').textContent = state.carrierHz.toFixed(1) + ' Hz';
+  updateOscillators();
+});
+
+document.getElementById('sl-binaural').addEventListener('input', function() {
+  state.binauralHz = parseFloat(this.value);
+  document.getElementById('val-binaural').textContent = state.binauralHz.toFixed(2) + ' Hz';
+  updateOscillators();
+});
+
+document.getElementById('sl-rho').addEventListener('input', function() {
+  state.rho = parseFloat(this.value);
+  document.getElementById('val-rho').textContent = state.rho.toFixed(2);
+  updateFeedback();
+});
+
+// ── CANVAS DRAG (receiver positioning) ────────────────────
+
+function canvasCoords(e) {
+  const wrap = document.getElementById('canvas-wrap');
+  const rect = wrap.getBoundingClientRect();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  return {
+    x: Math.max(0, Math.min(1, (clientX - rect.left)  / rect.width)),
+    y: Math.max(0, Math.min(1, (clientY - rect.top)   / rect.height)),
+  };
+}
+
+const wrap = document.getElementById('canvas-wrap');
+wrap.addEventListener('mousedown',  e => { state.dragging = true;  state.receiver = canvasCoords(e); });
+wrap.addEventListener('mousemove',  e => { if (state.dragging) state.receiver = canvasCoords(e); });
+wrap.addEventListener('mouseup',    () => { state.dragging = false; });
+wrap.addEventListener('mouseleave', () => { state.dragging = false; });
+wrap.addEventListener('touchstart', e => { e.preventDefault(); state.dragging = true;  state.receiver = canvasCoords(e); }, { passive: false });
+wrap.addEventListener('touchmove',  e => { e.preventDefault(); if (state.dragging) state.receiver = canvasCoords(e); }, { passive: false });
+wrap.addEventListener('touchend',   () => { state.dragging = false; });
+
+// ── INIT ──────────────────────────────────────────────────
+fieldModes = generateModes(GEOMETRIES[state.geoKey].faces);
+renderModeTable(fieldModes);
+renderFrame();
+
+// ── SERVICE WORKER REGISTRATION ───────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .catch(() => {}); // silently ignore if sw.js not present (MIDAS vault context)
+  });
+}
+</script>
+</body>
+</html>
